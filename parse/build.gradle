@@ -1,5 +1,11 @@
 apply plugin: "com.android.library"
 apply plugin: "com.github.kt3k.coveralls"
+apply plugin: "maven-publish"
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+def githubUsername = properties.getProperty('github.username')
+def githubToken = properties.getProperty('github.token')
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -43,6 +49,30 @@ dependencies {
     testImplementation "org.skyscreamer:jsonassert:1.5.0"
     testImplementation "org.mockito:mockito-core:1.10.19"
     testImplementation "com.squareup.okhttp3:mockwebserver:$okhttpVersion"
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId 'com.ow-ro'
+                artifactId 'parse-sdk-android'
+                version '1.0.2'
+            }
+        }
+
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = "https://maven.pkg.github.com/ow-ro/Parse-SDK-Android"
+                credentials {
+                    username = githubUsername
+                    password = githubToken
+                }
+            }
+        }
+    }
 }
 
 //region Code Coverage
