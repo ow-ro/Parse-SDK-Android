@@ -39,3 +39,5 @@ docs/
 # Jacoco
 jacoco.exec
 
+# Local configuration file (sdk path, etc)
+local.properties

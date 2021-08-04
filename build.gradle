@@ -16,11 +16,24 @@ plugins {
     id "com.github.ben-manes.versions" version "0.28.0"
 }
 
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+def githubUsername = properties.getProperty('github.username')
+def githubToken = properties.getProperty('github.token')
+
 allprojects {
     repositories {
         google()
         jcenter()
         maven { url 'https://jitpack.io' }
+        maven {
+            url 'https://maven.pkg.github.com/RedHarvest/RaveLogging-android'
+            name = "GitHubPackages"
+            credentials {
+                username = githubUsername
+                password = githubToken
+            }
+        }
     }
 }
 
