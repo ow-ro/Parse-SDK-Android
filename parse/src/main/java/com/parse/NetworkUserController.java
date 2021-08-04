@@ -12,12 +12,14 @@ import org.json.JSONObject;
 
 import java.util.Map;
 
+import com.example.ravelogger.RaveLogger;
 import com.parse.boltsinternal.Continuation;
 import com.parse.boltsinternal.Task;
 
 class NetworkUserController implements ParseUserController {
 
     private static final int STATUS_CODE_CREATED = 201;
+    private static final String LOG_TAG = NetworkUserController.class.getSimpleName();
 
     private final ParseHttpClient client;
     private final ParseObjectCoder coder;
@@ -101,12 +103,14 @@ class NetworkUserController implements ParseUserController {
     @Override
     public Task<ParseUser.State> logInAsync(
             final String authType, final Map<String, String> authData) {
+        RaveLogger.INSTANCE.i(LOG_TAG, "[ParseLogging] inside logInAsync");
         final ParseRESTUserCommand command = ParseRESTUserCommand.serviceLogInUserCommand(
                 authType, authData, revocableSession);
         return command.executeAsync(client).onSuccess(new Continuation<JSONObject, ParseUser.State>() {
             @Override
             public ParseUser.State then(Task<JSONObject> task) {
                 JSONObject result = task.getResult();
+                RaveLogger.INSTANCE.i(LOG_TAG, "[ParseLogging] executeAsync then, result: " + result.toString());
 
                 return coder.decode(new ParseUser.State.Builder(), result, ParseDecoder.get())
                         .isComplete(true)

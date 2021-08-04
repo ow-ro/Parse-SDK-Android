@@ -8,6 +8,7 @@
  */
 package com.parse;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcel;
 import androidx.annotation.NonNull;
@@ -23,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.example.ravelogger.RaveLogger;
 import com.parse.boltsinternal.Continuation;
 import com.parse.boltsinternal.Task;
 
@@ -39,6 +41,7 @@ public class ParseUser extends ParseObject {
     private static final String KEY_USERNAME = "username";
     private static final String KEY_PASSWORD = "password";
     private static final String KEY_EMAIL = "email";
+    private static final String LOG_TAG = ParseUser.class.getSimpleName();
 
     private static final List<String> READ_ONLY_KEYS = Collections.unmodifiableList(
             Arrays.asList(KEY_SESSION_TOKEN, KEY_AUTH_DATA));
@@ -390,17 +393,22 @@ public class ParseUser extends ParseObject {
             throw new IllegalArgumentException("Invalid authType: " + null);
         }
 
+        RaveLogger.INSTANCE.i(LOG_TAG, "[ParseLogging] Inside logInWithInBackground");
+
         final Continuation<Void, Task<ParseUser>> logInWithTask = new Continuation<Void, Task<ParseUser>>() {
             @Override
             public Task<ParseUser> then(Task<Void> task) {
+                RaveLogger.INSTANCE.i(LOG_TAG, "[ParseLogging] logInWithTask then");
                 return getUserController().logInAsync(authType, authData).onSuccessTask(new Continuation<ParseUser.State, Task<ParseUser>>() {
                     @Override
                     public Task<ParseUser> then(Task<ParseUser.State> task) {
+                        RaveLogger.INSTANCE.i(LOG_TAG, "[ParseLogging] logInAsync then");
                         ParseUser.State result = task.getResult();
                         final ParseUser user = ParseObject.from(result);
                         return saveCurrentUserAsync(user).onSuccess(new Continuation<Void, ParseUser>() {
                             @Override
                             public ParseUser then(Task<Void> task) {
+                                RaveLogger.INSTANCE.i(LOG_TAG, "[ParseLogging] saveCurrentUserAsync then");
                                 return user;
                             }
                         });
@@ -1520,4 +1528,8 @@ public class ParseUser extends ParseObject {
     }
 
     //endregion
+
+    public static void initBugfender(Context context, String username) {
+        RaveLogger.INSTANCE.initBugfender(context, username);
+    }
 }

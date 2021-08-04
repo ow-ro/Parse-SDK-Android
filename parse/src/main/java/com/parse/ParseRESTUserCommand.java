@@ -8,6 +8,7 @@
  */
 package com.parse;
 
+import com.example.ravelogger.RaveLogger;
 import com.parse.http.ParseHttpRequest;
 import com.parse.http.ParseHttpResponse;
 
@@ -23,6 +24,7 @@ class ParseRESTUserCommand extends ParseRESTCommand {
 
     private static final String HEADER_REVOCABLE_SESSION = "X-Parse-Revocable-Session";
     private static final String HEADER_TRUE = "1";
+    private static final String LOG_TAG = ParseRESTUserCommand.class.getSimpleName();
     private boolean isRevocableSessionEnabled;
 
     //region Authentication
@@ -89,6 +91,8 @@ class ParseRESTUserCommand extends ParseRESTCommand {
         } catch (JSONException e) {
             throw new RuntimeException("could not serialize object to JSON");
         }
+
+        RaveLogger.INSTANCE.i(LOG_TAG, "[ParseLogging] serviceLogInUserCommand: returning json");
 
         return serviceLogInUserCommand(parameters, null, revocableSession);
     }

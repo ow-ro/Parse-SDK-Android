@@ -10,6 +10,7 @@ package com.parse;
 
 import androidx.annotation.NonNull;
 
+import com.example.ravelogger.RaveLogger;
 import com.parse.http.ParseHttpBody;
 import com.parse.http.ParseHttpRequest;
 import com.parse.http.ParseHttpResponse;
@@ -54,6 +55,7 @@ abstract class ParseRequest<Response> {
     protected static final ExecutorService NETWORK_EXECUTOR = newThreadPoolExecutor(
             CORE_POOL_SIZE, MAX_POOL_SIZE, KEEP_ALIVE_TIME, TimeUnit.SECONDS,
             new LinkedBlockingQueue<Runnable>(MAX_QUEUE_SIZE), sThreadFactory);
+    private static final String LOG_TAG = ParseRequest.class.getSimpleName();
     private static long defaultInitialRetryDelay = DEFAULT_INITIAL_RETRY_DELAY;
     /* package */ ParseHttpRequest.Method method;
     /* package */ String url;
@@ -130,6 +132,7 @@ abstract class ParseRequest<Response> {
         return Task.<Void>forResult(null).onSuccessTask(new Continuation<Void, Task<Response>>() {
             @Override
             public Task<Response> then(Task<Void> task) throws Exception {
+                RaveLogger.INSTANCE.i(LOG_TAG, "[ParseLogging] sendOneRequestAsync success (NETWORK_EXECUTOR), returning task");
                 ParseHttpResponse response = client.execute(request);
                 return onResponseAsync(response, downloadProgressCallback);
             }
@@ -137,6 +140,7 @@ abstract class ParseRequest<Response> {
             @Override
             public Task<Response> then(Task<Response> task) {
                 if (task.isFaulted()) {
+                    RaveLogger.INSTANCE.i(LOG_TAG, "[ParseLogging] sendOneRequestAsync task faulted (BACKGROUND_EXECUTOR): " + (task.getError() != null ? task.getError().getMessage() : "no exception"));
                     Exception error = task.getError();
                     if (error instanceof IOException) {
                         return Task.forError(newTemporaryException("i/o failure", error));
@@ -207,6 +211,7 @@ abstract class ParseRequest<Response> {
             final long delay,
             final ProgressCallback downloadProgressCallback,
             final Task<Void> cancellationToken) {
+        RaveLogger.INSTANCE.i(LOG_TAG, "[ParseLogging] inside executeAsync");
         if (cancellationToken != null && cancellationToken.isCancelled()) {
             return Task.cancelled();
         }
@@ -215,6 +220,7 @@ abstract class ParseRequest<Response> {
             public Task<Response> then(Task<Response> task) {
                 Exception e = task.getError();
                 if (task.isFaulted() && e instanceof ParseException) {
+                    RaveLogger.INSTANCE.w(LOG_TAG, "[ParseLogging] exception in executeAsync: " + e.getMessage());
                     if (cancellationToken != null && cancellationToken.isCancelled()) {
                         return Task.cancelled();
                     }
@@ -256,6 +262,7 @@ abstract class ParseRequest<Response> {
                         return retryTask.getTask();
                     }
                 }
+                RaveLogger.INSTANCE.i(LOG_TAG, "[ParseLogging] no issues in executeAsync, returning task");
                 return task;
             }
         });

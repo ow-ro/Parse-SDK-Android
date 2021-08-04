@@ -8,6 +8,8 @@
  */
 package com.parse;
 
+import com.example.ravelogger.RaveLogger;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,6 +27,7 @@ class ParseObjectCoder {
     private static final String KEY_UPDATED_AT = "updatedAt";
 
     private static final ParseObjectCoder INSTANCE = new ParseObjectCoder();
+    private static final String LOG_TAG = ParseObjectCoder.class.getSimpleName();
 
     /* package */ ParseObjectCoder() {
         // do nothing
@@ -86,6 +89,7 @@ class ParseObjectCoder {
     public <T extends ParseObject.State.Init<?>> T decode(
             T builder, JSONObject json, ParseDecoder decoder) {
         try {
+            RaveLogger.INSTANCE.i(LOG_TAG, "[ParseLogging] inside decode");
             Iterator<?> keys = json.keys();
             while (keys.hasNext()) {
                 String key = (String) keys.next();
@@ -119,7 +123,7 @@ class ParseObjectCoder {
                 Object decodedObject = decoder.decode(value);
                 builder.put(key, decodedObject);
             }
-
+            RaveLogger.INSTANCE.i(LOG_TAG, "[ParseLogging] decode success, returning builder");
             return builder;
         } catch (JSONException e) {
             throw new RuntimeException(e);
